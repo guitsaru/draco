@@ -23,7 +23,7 @@ These can be shared across many different types of game objects.
 class Visible < Draco::Component; end
 ```
 
-`Visible` is an example of a flag component. An entity either has it, or it doesn't. We can also associate data with our
+`Visible` is an example of a label component. An entity either has it, or it doesn't. We can also associate data with our
 components.
 
 ```ruby
