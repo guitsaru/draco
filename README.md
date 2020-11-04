@@ -140,6 +140,8 @@ Here are some good resources to learn about Entity Component Systems
 
 Draco is licensed under AGPL. You can purchase the right to use Draco under the [commercial license](https://github.com/guitsaru/draco/blob/master/COMM-LICENSE).
 
+<a class="gumroad-button" href="https://gum.co/KySKN" target="_blank">Purchase Commercial License</a>
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
