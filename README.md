@@ -129,6 +129,13 @@ world.systems << RenderSpriteSystem
 world.tick(args)
 ```
 
+## Learn More
+
+Here are some good resources to learn about Entity Component Systems
+
+- [Evolve Your Heirarchy](https://cowboyprogramming.com/2007/01/05/evolve-your-heirachy/)
+- [Overwatch Gameplay Architecture and Netcode](https://www.youtube.com/watch?v=W3aieHjyNvw)
+
 ## Commercial License
 
 Draco is licensed under AGPL. You can purchase the right to use Draco under the [commercial license](https://github.com/guitsaru/draco/blob/master/COMM-LICENSE).
