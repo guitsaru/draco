@@ -1,12 +1,15 @@
+# frozen_string_literal: true
+
 # Public: Draco is an Entity Component System for use in game engines like DragonRuby.
 #
-# An Entity Component System is an architectural pattern used in game development to decouple behaviour from game objects.
+# An Entity Component System is an architectural pattern used in game development to decouple behavior from objects.
 module Draco
   # Public: The version of the library. Draco uses semver to version releases.
   VERSION = "0.1.0"
 
   # Public: A general purpose game object that consists of a unique id and a collection of Components.
   class Entity
+    # rubocop:disable Style/ClassVars
     @default_components = {}
     @@next_id = 1
 
@@ -22,6 +25,7 @@ module Draco
     #
     # Returns nothing.
     def self.inherited(sub)
+      super
       sub.instance_variable_set(:@default_components, {})
     end
 
@@ -42,8 +46,8 @@ module Draco
     end
 
     # Internal: Returns the default components for the class.
-    def self.default_components
-      @default_components
+    class << self
+      attr_reader :default_components
     end
 
     # Public: Initialize a new Entity.
@@ -72,7 +76,7 @@ module Draco
     #
     # Returns a Hash representing the Entity.
     def serialize
-      serialized = {id: id}
+      serialized = { id: id }
 
       components.each do |component|
         serialized[underscore(component.class.name.to_s).to_sym] = component.serialize
@@ -111,11 +115,15 @@ module Draco
     #
     # Returns the Component instance.
 
-    def method_missing(m, *args, &block)
-      component = components.find { |c| underscore(c.class.name.to_s) == m.to_s }
+    def method_missing(method, *args, &block)
+      component = components.find { |c| underscore(c.class.name.to_s) == method.to_s }
       return component if component
 
       super
+    end
+
+    def respond_to_missing?
+      !!components.find { |c| underscore(c.class.name.to_s) == m.to_s } || super
     end
 
     # Internal: Converts a camel cased string to an underscored string.
@@ -130,7 +138,7 @@ module Draco
       string.split("::").last.bytes.map.with_index do |byte, i|
         if byte > 64 && byte < 97
           downcased = byte + 32
-          i == 0 ? downcased.chr : "_#{downcased.chr}"
+          i.zero? ? downcased.chr : "_#{downcased.chr}"
         else
           byte.chr
         end
@@ -140,6 +148,7 @@ module Draco
 
   # Public: The data to associate with an Entity.
   class Component
+    # rubocop:enable Style/ClassVars
     @attribute_options = {}
 
     # Internal: Resets the attribute options for each class that inherits Component.
@@ -148,6 +157,7 @@ module Draco
     #
     # Returns nothing.
     def self.inherited(sub)
+      super
       sub.instance_variable_set(:@attribute_options, {})
     end
 
@@ -160,12 +170,13 @@ module Draco
     # Returns nothing.
     def self.attribute(name, options = {})
       attr_accessor name
+
       @attribute_options[name] = options
     end
 
     # Internal: Returns the Hash attribute options for the current Class.
-    def self.attribute_options
-      @attribute_options
+    class << self
+      attr_reader :attribute_options
     end
 
     # Public: Initializes a new Component.
@@ -213,7 +224,8 @@ module Draco
     end
   end
 
-  # Public: Systems contain the logic of the game. The System runs on each tick and manipulates the Entities in the World.
+  # Public: Systems contain the logic of the game.
+  # The System runs on each tick and manipulates the Entities in the World.
   class System
     @filter = []
 
@@ -240,6 +252,7 @@ module Draco
     #
     # Returns nothing.
     def self.inherited(sub)
+      super
       sub.instance_variable_set(:@filter, [])
     end
 

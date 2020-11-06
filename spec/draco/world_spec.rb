@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class WorldComponent < Draco::Component
   attribute :tested, default: false
 end
@@ -5,7 +7,6 @@ end
 class FilteredComponent < Draco::Component
   attribute :tested, default: false
 end
-
 
 class WorldEntity < Draco::Entity
   component WorldComponent

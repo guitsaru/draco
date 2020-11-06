@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SampleComponent < Draco::Component
   attr_reader :test
 

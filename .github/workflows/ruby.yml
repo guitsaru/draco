@@ -37,3 +37,5 @@ jobs:
       with:
         name: coverage-report
         path: coverage
+  - name: Rubocop
+    run: bundle exec rubocop
