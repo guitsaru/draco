@@ -1,0 +1,10 @@
+Metrics/BlockLength:
+  Exclude:
+    - "Rakefile"
+    - "spec/**/*.rb"
+
+AllCops:
+  NewCops: enable
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes

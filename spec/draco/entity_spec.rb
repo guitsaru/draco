@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TestComponent < Draco::Component
   attribute :test, default: true
 end

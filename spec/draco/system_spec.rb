@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SampleSystem < Draco::System
   filter SampleComponent
 end
