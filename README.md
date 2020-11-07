@@ -97,8 +97,8 @@ class RenderSpriteSystem < Draco::System
 
     sprites = entities.select { |e| entity_in_camera?(e, camera) }.map do |entity|
        {
-        x: entity.position.x,
-        y: entity.position.y,
+        x: entity.position.x - camera.position.x,
+        y: entity.position.y - camera.position.y,
         w: entity.sprite.w,
         h: entity.sprite.h,
         path: entity.sprite.path
