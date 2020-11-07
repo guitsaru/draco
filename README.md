@@ -95,7 +95,7 @@ class RenderSpriteSystem < Draco::System
     # You can also access the world that called the system.
     camera = world.filter([Camera]).first
 
-    sprites = entities.select { |e| entity_in_camera?(e) }.map do |entity|
+    sprites = entities.select { |e| entity_in_camera?(e, camera) }.map do |entity|
        {
         x: entity.position.x,
         y: entity.position.y,
