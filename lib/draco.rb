@@ -39,8 +39,8 @@ module Draco
       @default_components[component] = defaults
     end
 
-    # Internal: Returns the default components for the class.
     class << self
+      # Internal: Returns the default components for the class.
       attr_reader :default_components
     end
 
@@ -373,6 +373,62 @@ module Draco
 
   # Public: The container for current Entities and Systems.
   class World
+    @default_entities = {}
+    @default_systems = []
+
+    # Internal: Resets the default components for each class that inherites Entity.
+    #
+    # sub - The class that is inheriting Entity.
+    #
+    # Returns nothing.
+    def self.inherited(sub)
+      super
+      sub.instance_variable_set(:@default_entities, {})
+      sub.instance_variable_set(:@default_systems, [])
+    end
+
+    # Public: Adds a default Entity to the World.
+    #
+    # entity - The class of the Entity to add by default.
+    # defaults - The Hash of default values for the Entity. (default: {})
+    #
+    # Examples
+    #
+    #   entity(Player)
+    #
+    #   entity(Player, position: { x: 0, y: 0 })
+    #
+    # Returns nothing.
+    def self.entity(entity, defaults = {})
+      name = defaults[:as]
+      @default_entities[entity] = defaults
+
+      attr_reader(name.to_sym) if name
+    end
+
+    # Public: Adds default Systems to the World.
+    #
+    # systems - The System or Array list of System classes to add to the World.
+    #
+    # Examples
+    #
+    #   systems(RenderSprites)
+    #
+    #   systems(RenderSprites, RenderLabels)
+    #
+    # Returns nothing.
+    def self.systems(*systems)
+      @default_systems << systems.flatten
+    end
+
+    class << self
+      # Internal: Returns the default Entities for the class.
+      attr_reader :default_entities
+
+      # Internal: Returns the default Systems for the class.
+      attr_reader :default_systems
+    end
+
     # Public: Returns the Array of Systems.
     attr_reader :systems
 
@@ -384,8 +440,16 @@ module Draco
     # entities - The Array of Entities for the World (default: []).
     # systems - The Array of System Classes for the World (default: []).
     def initialize(entities: [], systems: [])
-      @entities = EntityStore.new(entities)
-      @systems = systems
+      default_entities = self.class.default_entities.map do |klass, attributes|
+        name = attributes[:as]
+        entity = klass.new(attributes)
+        instance_variable_set("@#{name}", entity) if name
+
+        entity
+      end
+
+      @entities = EntityStore.new(default_entities + entities)
+      @systems = self.class.default_systems + systems
     end
 
     # Public: Runs all of the Systems every tick.

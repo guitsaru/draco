@@ -129,6 +129,27 @@ world.systems << RenderSpriteSystem
 world.tick(args)
 ```
 
+Just like with entities, we can define a subclassed template for our world.
+
+```ruby
+class Overworld < Draco::World
+  entity Goblin
+  entity Player, position: { x: 50, y: 50 }, as: :player
+  systems RenderSpriteSystem, InputSystem
+end
+
+world = Overworld.new
+```
+
+### Named Entities
+
+If there are entities that are frequently accessed in our systems, we can give these a name. In the above example, our
+player entity has been given the name `player`. We can now access this directly from our world:
+
+```ruby
+world.player
+```
+
 ## Learn More
 
 Here are some good resources to learn about Entity Component Systems
