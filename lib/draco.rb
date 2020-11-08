@@ -579,7 +579,7 @@ module Draco
     #
     # Returns a boolean.
     def member?(member)
-      @hash.has_key?(member)
+      @hash.key?(member)
     end
 
     # Internal: Returns true if there are no entries in the Set.
@@ -601,6 +601,10 @@ module Draco
       end
 
       response
+    end
+
+    def ==(other)
+      hash == other.hash
     end
 
     # Internal: Returns a unique hash value of the Set.
