@@ -418,7 +418,7 @@ module Draco
     #
     # Returns nothing.
     def self.systems(*systems)
-      @default_systems << systems.flatten
+      @default_systems += Array(systems).flatten
     end
 
     class << self
