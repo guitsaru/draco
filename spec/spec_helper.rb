@@ -8,6 +8,7 @@ SimpleCov.start do
 
   add_filter "spec"
 end
+puts "Simplecov"
 
 require "bundler/setup"
 require "draco"

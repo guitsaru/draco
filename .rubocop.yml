@@ -5,6 +5,8 @@ Metrics/BlockLength:
 
 AllCops:
   NewCops: enable
+  Exclude:
+    - "benchmark.rb"
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
