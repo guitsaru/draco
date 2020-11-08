@@ -8,6 +8,8 @@ class FilteredComponent < Draco::Component
   attribute :tested, default: false
 end
 
+class AnotherComponent < Draco::Component; end
+
 class WorldEntity < Draco::Entity
   component WorldComponent
 end
@@ -81,5 +83,62 @@ RSpec.describe Draco::World do
     subject { Draco::World.new.to_s }
 
     it { is_expected.to be }
+  end
+
+  describe "#entities" do
+    let(:entity) do
+      entity = Draco::Entity.new
+      entity.components << WorldComponent.new
+      entity.components << FilteredComponent.new
+      entity
+    end
+
+    let(:world) do
+      world = Draco::World.new
+      world.entities << entity
+      world
+    end
+
+    it "updates component map when entity deletes a component" do
+      expect(world.filter([FilteredComponent])).to_not be_empty
+      entity.components.delete(entity.filtered_component)
+
+      expect(world.filter([FilteredComponent])).to be_empty
+    end
+
+    it "updates component map when entity adds a component" do
+      expect(world.filter([AnotherComponent])).to be_empty
+      entity.components << AnotherComponent.new
+
+      expect(world.filter([FilteredComponent])).to_not be_empty
+    end
+
+    it "can delete an entity" do
+      world.entities.delete(entity)
+      expect(world.entities).to be_empty
+    end
+  end
+
+  describe "#filter" do
+    let(:entity) do
+      entity = Draco::Entity.new
+      entity.components << WorldComponent.new
+      entity.components << FilteredComponent.new
+      entity
+    end
+
+    let(:world) do
+      world = Draco::World.new
+      world.entities << entity
+      world
+    end
+
+    it "works with one component" do
+      expect(world.filter(WorldComponent)).to_not be_empty
+    end
+
+    it "works with multiple components" do
+      expect(world.filter(WorldComponent, FilteredComponent)).to_not be_empty
+    end
   end
 end

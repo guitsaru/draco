@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "An ECS library."
   spec.description   = "A library for Entities, Components, and Systems in games."
-  spec.homepage      = "https://mattpruitt.com"
+  spec.homepage      = "https://github.com/guitsaru/draco"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.4.0")
 
   spec.metadata["homepage_uri"] = spec.homepage

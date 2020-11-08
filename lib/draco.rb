@@ -13,12 +13,6 @@ module Draco
     @default_components = {}
     @@next_id = 1
 
-    # Public: Returns the Integer id of the Entity.
-    attr_reader :id
-
-    # Public: Returns the Array of the Entity's components
-    attr_reader :components
-
     # Internal: Resets the default components for each class that inherites Entity.
     #
     # sub - The class that is inheriting Entity.
@@ -50,6 +44,12 @@ module Draco
       attr_reader :default_components
     end
 
+    # Public: Returns the Integer id of the Entity.
+    attr_reader :id
+
+    # Public: Returns the Array of the Entity's components
+    attr_reader :components
+
     # Public: Initialize a new Entity.
     #
     # args - A Hash of arguments to pass into the components.
@@ -64,12 +64,29 @@ module Draco
     def initialize(args = {})
       @id = args.fetch(:id, @@next_id)
       @@next_id = [@id + 1, @@next_id].max
-      @components = []
+      @components = ComponentStore.new(self)
+      @subscriptions = []
 
       self.class.default_components.each do |component, default_args|
         arguments = default_args.merge(args[underscore(component.name.to_s).to_sym] || {})
         @components << component.new(arguments)
       end
+    end
+
+    # Public: Subscribe to an Entity's Component updates.
+    #
+    # subscriber - The object to notify when Components change.
+    #
+    # Returns nothing.
+    def subscribe(subscriber)
+      @subscriptions << subscriber
+    end
+
+    # Internal: Notifies subscribers that components have been updated.
+    #
+    # Returns nothing.
+    def components_updated
+      @subscriptions.each { |sub| sub.entity_updated(self) }
     end
 
     # Public: Serializes the Entity to save the current state.
@@ -122,8 +139,8 @@ module Draco
       super
     end
 
-    def respond_to_missing?
-      !!components.find { |c| underscore(c.class.name.to_s) == m.to_s } || super
+    def respond_to_missing?(method, include_private = false)
+      !!components.find { |c| underscore(c.class.name.to_s) == method.to_s } || super
     end
 
     # Internal: Converts a camel cased string to an underscored string.
@@ -137,12 +154,35 @@ module Draco
     def underscore(string)
       string.split("::").last.bytes.map.with_index do |byte, i|
         if byte > 64 && byte < 97
-          downcased = byte + 32
+          downcased = byte + 32# gemspec
           i.zero? ? downcased.chr : "_#{downcased.chr}"
         else
           byte.chr
         end
       end.join
+    end
+
+    # Internal: An Array that notifies it's parent of updates.
+    class ComponentStore
+      # Internal: Initializes a new ComponentStore
+      #
+      # parent - The object to notify about updates.
+      def initialize(parent)
+        @components = []
+        @parent = parent
+      end
+
+      def respond_to_missing?(method, include_private = false)
+        @components.respond_to?(method, include_private)
+      end
+
+      def method_missing(method, *args, &block)
+        original = @components.hash
+        resp = @components.send(method, *args, &block)
+        @parent.components_updated unless original == @components.hash
+
+        resp
+      end
     end
   end
 
@@ -308,7 +348,7 @@ module Draco
     # entities - The Array of Entities for the World (default: []).
     # systems - The Array of System Classes for the World (default: []).
     def initialize(entities: [], systems: [])
-      @entities = entities
+      @entities = EntityStore.new(entities)
       @systems = systems
     end
 
@@ -330,8 +370,8 @@ module Draco
     # components - An Array of Component classes to match.
     #
     # Returns an Array of matching Entities.
-    def filter(components)
-      entities.select { |e| (components - e.components.map(&:class)).empty? }
+    def filter(*components)
+      entities[components.flatten]
     end
 
     # Public: Serializes the World to save the current state.
@@ -352,6 +392,189 @@ module Draco
     # Public: Returns a String representation of the World.
     def to_s
       serialize.to_s
+    end
+
+    # Internal: Stores Entities with better performance than Array.
+    class EntityStore
+      include Enumerable
+
+      # Internal: Initializes a new EntityStore
+      #
+      # entities - The Entities to add to the EntityStore
+      def initialize(*entities)
+        @entity_to_components = Hash.new { |hash, key| hash[key] = Set.new }
+        @component_to_entities = Hash.new { |hash, key| hash[key] = Set.new }
+
+        self << entities
+      end
+
+      # Internal: Gets all Entities that implement all of the given Components
+      #
+      # components - The Component Classes to filter by
+      #
+      # Returns a Set list of Entities
+      def [](*components)
+        components
+          .flatten
+          .map { |component| @component_to_entities[component] }
+          .reduce { |acc, i| i & acc }
+      end
+
+      # Internal: Adds Entities to the EntityStore
+      #
+      # entities - The Entity or Array list of Entities to add to the EntityStore.
+      #
+      # Returns the EntityStore
+      def <<(entities)
+        Array(entities).flatten.each { |e| add(e) }
+        self
+      end
+
+      # Internal: Adds an Entity to the EntityStore.
+      #
+      # entity - The Entity to add to the EntityStore.
+      #
+      # Returns the EntityStore
+      def add(entity)
+        entity.subscribe(self)
+
+        components = entity.components.map(&:class)
+        @entity_to_components[entity].merge(components)
+
+        components.each do |component|
+          @component_to_entities[component].add(entity)
+        end
+
+        self
+      end
+
+      # Internal: Removes an Entity from the EntityStore.
+      #
+      # entity - The Entity to remove from the EntityStore.
+      #
+      # Returns the EntityStore
+      def delete(entity)
+        components = @entity_to_components.delete(entity)
+
+        components.map(&:class).each do |component|
+          @component_to_entities[component].delete(entity)
+        end
+      end
+
+      # Internal: Returns true if the EntityStore has no Entities.
+      def empty?
+        @entity_to_components.empty?
+      end
+
+      # Internal: Returns an Enumerator for all of the Entities.
+      def each(&block)
+        @entity_to_components.keys.each(&block)
+      end
+
+      # Internal: Updates the EntityStore when an Entity's Components are modified.
+      #
+      # entity - The Entity whose Components were updated.
+      #
+      # Returns nothing.
+      def entity_updated(entity)
+        old = @entity_to_components[entity].to_a
+        components = entity.components.map(&:class)
+        @entity_to_components[entity] = components
+
+        added = components - old
+        deleted = old - components
+
+        added.each { |component| @component_to_entities[component].add(entity) }
+        deleted.each { |component| @component_to_entities[component].delete(entity) }
+      end
+    end
+  end
+
+  # Internal: An implementation of Set.
+  class Set
+    include Enumerable
+
+    # Internal: Initializes a new Set.
+    #
+    # entries - The initial Array list of entries for the Set
+    def initialize(entries = [])
+      @hash = {}
+      merge(entries)
+    end
+
+    # Internal: Adds a new entry to the Set.
+    #
+    # entry - The object to add to the Set.
+    #
+    # Returns the Set.
+    def add(entry)
+      @hash[entry] = true
+      self
+    end
+
+    # Internal: Adds a new entry to the Set.
+    #
+    # entry - The object to add to the Set.
+    #
+    # Returns the Set.
+    def delete(entry)
+      @hash.delete(entry)
+      self
+    end
+
+    # Internal: Adds multiple objects to the Set.
+    #
+    # entry - The Array list of objects to add to the Set.
+    #
+    # Returns the Set.
+    def merge(entries)
+      Array(entries).each { |entry| add(entry) }
+      self
+    end
+
+    # Internal: Returns an Enumerator for all of the entries in the Set.
+    def each(&block)
+      @hash.keys.each(&block)
+    end
+
+    # Internal: Returns true if the object is in the Set.
+    #
+    # member - The object to search the Set for.
+    #
+    # Returns a boolean.
+    def include?(member)
+      @hash.include?(member)
+    end
+
+    # Internal: Returns true if there are no entries in the Set.
+    #
+    # Returns a boolean.
+    def empty?
+      @hash.empty?
+    end
+
+    # Internal: Returns the intersection of two Sets.
+    #
+    # other - The Set to intersect with
+    #
+    # Returns a new Set of all of the common entries.
+    def &(other)
+      response = Set.new
+      each do |key, _|
+        response.add(key) if other.include?(key)
+      end
+
+      response
+    end
+
+    # Internal: Returns a unique hash value of the Set.
+    def hash
+      @hash.hash
+    end
+
+    # Internal: Returns an Array representation of the Set.
+    def to_a
+      @hash.keys
     end
   end
 end
