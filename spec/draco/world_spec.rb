@@ -26,6 +26,12 @@ class WorldSystem < Draco::System
   end
 end
 
+class SampleWorld < Draco::World
+  entity WorldEntity
+  entity FilteredEntity, filtered_component: { tested: true }, as: :filtered_entity
+  systems WorldSystem
+end
+
 RSpec.describe Draco::World do
   describe "#systems" do
     subject { Draco::World.new.systems }
@@ -139,6 +145,23 @@ RSpec.describe Draco::World do
 
     it "works with multiple components" do
       expect(world.filter(WorldComponent, FilteredComponent)).to_not be_empty
+    end
+  end
+
+  describe "World Templates" do
+    let(:world) { SampleWorld.new }
+
+    it "has default entities" do
+      expect(world.entities).to_not be_empty
+      expect(world.entities[FilteredComponent].first.filtered_component.tested).to be true
+    end
+
+    it "has named entities" do
+      expect(world.filtered_entity.filtered_component.tested).to be true
+    end
+
+    it "has default systems" do
+      expect(world.systems).to_not be_empty
     end
   end
 end
