@@ -5,7 +5,7 @@
 # An Entity Component System is an architectural pattern used in game development to decouple behavior from objects.
 module Draco
   # Public: The version of the library. Draco uses semver to version releases.
-  VERSION = "0.1.0"
+  VERSION = "0.2.0"
 
   # Public: A general purpose game object that consists of a unique id and a collection of Components.
   class Entity
