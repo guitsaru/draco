@@ -578,8 +578,8 @@ module Draco
     # member - The object to search the Set for.
     #
     # Returns a boolean.
-    def include?(member)
-      @hash.include?(member)
+    def member?(member)
+      @hash.has_key?(member)
     end
 
     # Internal: Returns true if there are no entries in the Set.
@@ -597,7 +597,7 @@ module Draco
     def &(other)
       response = Set.new
       each do |key, _|
-        response.add(key) if other.include?(key)
+        response.add(key) if other.member?(key)
       end
 
       response
@@ -611,6 +611,21 @@ module Draco
     # Internal: Returns an Array representation of the Set.
     def to_a
       @hash.keys
+    end
+
+    # Internal: Serializes the Set.
+    def serialize
+      to_a.inspect
+    end
+
+    # Internal: Inspects the Set.
+    def inspect
+      to_a.inspect
+    end
+
+    # Internal: Returns a String representation of the Set.
+    def to_s
+      to_a.to_s
     end
   end
 
