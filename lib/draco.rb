@@ -68,7 +68,7 @@ module Draco
       @subscriptions = []
 
       self.class.default_components.each do |component, default_args|
-        arguments = default_args.merge(args[underscore(component.name.to_s).to_sym] || {})
+        arguments = default_args.merge(args[Draco.underscore(component.name.to_s).to_sym] || {})
         @components << component.new(arguments)
       end
     end
@@ -96,7 +96,7 @@ module Draco
       serialized = { id: id }
 
       components.each do |component|
-        serialized[underscore(component.class.name.to_s).to_sym] = component.serialize
+        serialized[Draco.underscore(component.class.name.to_s).to_sym] = component.serialize
       end
 
       serialized
@@ -133,62 +133,98 @@ module Draco
     # Returns the Component instance.
 
     def method_missing(method, *args, &block)
-      component = components.find { |c| underscore(c.class.name.to_s) == method.to_s }
+      component = components[method.to_sym]
       return component if component
 
       super
     end
 
-    def respond_to_missing?(method, include_private = false)
-      !!components.find { |c| underscore(c.class.name.to_s) == method.to_s } || super
-    end
-
-    # Internal: Converts a camel cased string to an underscored string.
-    #
-    # Examples
-    #
-    #   underscore("CamelCase")
-    #   # => "camel_case"
-    #
-    # Returns a String.
-    def underscore(string)
-      string.split("::").last.bytes.map.with_index do |byte, i|
-        if byte > 64 && byte < 97
-          downcased = byte + 32# gemspec
-          i.zero? ? downcased.chr : "_#{downcased.chr}"
-        else
-          byte.chr
-        end
-      end.join
+    def respond_to_missing?(method, _include_private = false)
+      !!components[method.to_sym] or super
     end
 
     # Internal: An Array that notifies it's parent of updates.
     class ComponentStore
+      include Enumerable
+
       # Internal: Initializes a new ComponentStore
       #
       # parent - The object to notify about updates.
       def initialize(parent)
-        @components = []
+        @components = {}
         @parent = parent
       end
 
-      def respond_to_missing?(method, include_private = false)
-        @components.respond_to?(method, include_private)
+      # Internal: Adds Components to the ComponentStore.
+      #
+      # Side Effects: Notifies the parent that the components were updated.
+      #
+      # components - The Component or Array list of Components to add to the ComponentStore.
+      #
+      # Returns the ComponentStore.
+      def <<(*components)
+        components.flatten.each { |component| add(component) }
+
+        @parent.components_updated
+        self
       end
 
-      def method_missing(method, *args, &block)
-        original = @components.hash
-        resp = @components.send(method, *args, &block)
-        @parent.components_updated unless original == @components.hash
+      # Internal: Returns the Component with the underscored Component name.
+      #
+      # underscored_component - The String underscored version of the Component's class name.
+      #
+      # Returns the Component instance or nil.
+      def [](underscored_component)
+        @components[underscored_component]
+      end
 
-        resp
+      # Internal: Adds a Component to the ComponentStore.
+      #
+      # Side Effects: Notifies the parent that the components were updated.
+      #
+      # components - The Component to add to the ComponentStore.
+      #
+      # Returns the ComponentStore.
+      def add(component)
+        name = Draco.underscore(component.class.name.to_s).to_sym
+        @components[name] = component
+
+        @parent.components_updated
+        self
+      end
+
+      # Internal: Removes a Component from the ComponentStore.
+      #
+      # Side Effects: Notifies the parent that the components were updated.
+      #
+      # components - The Component to remove from the ComponentStore.
+      #
+      # Returns the ComponentStore.
+      def delete(component)
+        name = Draco.underscore(component.class.name.to_s).to_sym
+        @components.delete(name)
+
+        @parent.components_updated
+        self
+      end
+
+      # Internal: Returns true if there are no entries in the Set.
+      #
+      # Returns a boolean.
+      def empty?
+        @components.empty?
+      end
+
+      # Internal: Returns an Enumerator for all of the Entities.
+      def each(&block)
+        @components.values.each(&block)
       end
     end
+    # rubocop:enable Style/ClassVars
   end
 
   # Public: The data to associate with an Entity.
   class Component
-    # rubocop:enable Style/ClassVars
     @attribute_options = {}
 
     # Internal: Resets the attribute options for each class that inherits Component.
@@ -576,5 +612,24 @@ module Draco
     def to_a
       @hash.keys
     end
+  end
+
+  # Internal: Converts a camel cased string to an underscored string.
+  #
+  # Examples
+  #
+  #   underscore("CamelCase")
+  #   # => "camel_case"
+  #
+  # Returns a String.
+  def self.underscore(string)
+    string.split("::").last.bytes.map.with_index do |byte, i|
+      if byte > 64 && byte < 97
+        downcased = byte + 32 # gemspec
+        i.zero? ? downcased.chr : "_#{downcased.chr}"
+      else
+        byte.chr
+      end
+    end.join
   end
 end

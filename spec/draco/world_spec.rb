@@ -110,7 +110,7 @@ RSpec.describe Draco::World do
       expect(world.filter([AnotherComponent])).to be_empty
       entity.components << AnotherComponent.new
 
-      expect(world.filter([FilteredComponent])).to_not be_empty
+      expect(world.filter([AnotherComponent])).to_not be_empty
     end
 
     it "can delete an entity" do
