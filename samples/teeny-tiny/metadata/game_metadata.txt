@@ -1,0 +1,6 @@
+devid=guitsaru
+devtitle=guitsaru
+gameid=teeny-tiny-space-game
+gametitle=Teeny Tiny Space Game
+version=1.1
+icon=metadata/icon.png

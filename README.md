@@ -6,6 +6,17 @@ An Entity Component System is an architectural framework that decouples game obj
 build game objects through composition. This allows you to easily share small logic components between different game
 objects.
 
+## Sample Application
+
+This repository includes a sample application in `samples/teeny-tiny`.
+
+### Running the sample application
+
+1. Download the [latest release](https://github.com/guitsaru/draco/archive/main.zip) of this repository.
+2. Create a copy of DragonRuby GTK in a new folder.
+3. Copy the teeny-tiny directory from draco into your new DragonRuby GTK folder. `cp -r draco/samples/teeny-tiny dragonruby/teeny-tiny`.
+4. Run it using `./dragonruby teeny-tiny`.
+
 ## Installation
 
 1. Create a `lib` directory inside your game's `app` directory.
