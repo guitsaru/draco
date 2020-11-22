@@ -554,9 +554,9 @@ module Draco
       #
       # Returns the EntityStore
       def delete(entity)
-        components = @entity_to_components.delete(entity)
+        components = Array(@entity_to_components.delete(entity))
 
-        components.map(&:class).each do |component|
+        components.each do |component|
           @component_to_entities[component].delete(entity)
         end
       end
