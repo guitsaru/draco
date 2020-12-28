@@ -373,7 +373,7 @@ module Draco
 
   # Public: The container for current Entities and Systems.
   class World
-    @default_entities = {}
+    @default_entities = []
     @default_systems = []
 
     # Internal: Resets the default components for each class that inherites Entity.
@@ -383,7 +383,7 @@ module Draco
     # Returns nothing.
     def self.inherited(sub)
       super
-      sub.instance_variable_set(:@default_entities, {})
+      sub.instance_variable_set(:@default_entities, [])
       sub.instance_variable_set(:@default_systems, [])
     end
 
@@ -401,7 +401,7 @@ module Draco
     # Returns nothing.
     def self.entity(entity, defaults = {})
       name = defaults[:as]
-      @default_entities[entity] = defaults
+      @default_entities.push([entity, defaults])
 
       attr_reader(name.to_sym) if name
     end
@@ -440,7 +440,8 @@ module Draco
     # entities - The Array of Entities for the World (default: []).
     # systems - The Array of System Classes for the World (default: []).
     def initialize(entities: [], systems: [])
-      default_entities = self.class.default_entities.map do |klass, attributes|
+      default_entities = self.class.default_entities.map do |default|
+        klass, attributes = default
         name = attributes[:as]
         entity = klass.new(attributes)
         instance_variable_set("@#{name}", entity) if name
