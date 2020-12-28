@@ -174,6 +174,19 @@ player entity has been given the name `player`. We can now access this directly 
 world.player
 ```
 
+### Fetching entities by id
+
+In some cases you'll want to keep track of entities by their id, such as when you want to keep track of another entity in a component.
+
+```ruby
+entity = Player.new
+entity.id
+# => 12
+
+world.entities[12] == entity
+# => true
+```
+
 ## Learn More
 
 Here are some good resources to learn about Entity Component Systems

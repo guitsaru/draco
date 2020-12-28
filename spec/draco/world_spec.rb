@@ -147,6 +147,11 @@ RSpec.describe Draco::World do
     it "works with multiple components" do
       expect(world.filter(WorldComponent, FilteredComponent)).to_not be_empty
     end
+
+    it "works with an entity id" do
+      entity = world.entities.first
+      expect(world.filter(entity.id)).to_not be_empty
+    end
   end
 
   describe "World Templates" do

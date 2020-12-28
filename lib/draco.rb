@@ -505,19 +505,26 @@ module Draco
       def initialize(*entities)
         @entity_to_components = Hash.new { |hash, key| hash[key] = Set.new }
         @component_to_entities = Hash.new { |hash, key| hash[key] = Set.new }
+        @entity_ids = {}
 
         self << entities
       end
 
-      # Internal: Gets all Entities that implement all of the given Components
+      # Internal: Gets all Entities that implement all of the given Components or that match the given entity ids.
       #
-      # components - The Component Classes to filter by
+      # components_or_ids - The Component Classes to filter by
       #
       # Returns a Set list of Entities
-      def [](*components)
-        components
+      def [](*components_or_ids)
+        components_or_ids
           .flatten
-          .map { |component| @component_to_entities[component] }
+          .map do |component_or_id|
+            if component_or_id.is_a?(Numeric)
+              Array(@entity_ids[component_or_id])
+            else
+              @component_to_entities[component_or_id]
+            end
+          end
           .reduce { |acc, i| i & acc }
       end
 
@@ -539,6 +546,8 @@ module Draco
       def add(entity)
         entity.subscribe(self)
 
+        @entity_ids[entity.id] = entity
+
         components = entity.components.map(&:class)
         @entity_to_components[entity].merge(components)
 
@@ -555,6 +564,7 @@ module Draco
       #
       # Returns the EntityStore
       def delete(entity)
+        @entity_ids.delete(entity.id)
         components = Array(@entity_to_components.delete(entity))
 
         components.each do |component|
