@@ -23,6 +23,19 @@ This repository includes a sample application in `samples/teeny-tiny`.
 2. Copy `lib/draco.rb` into your new `lib` directory.
 3. In your `main.rb` file, require `app/lib/draco.rb`.
 
+## Support
+
+- Find a bug? [Open an issue](https://github.com/guitsaru/draco/issues).
+- Need help? [Start a Discussion](https://github.com/guitsaru/draco/discussions) or [Join us in Discord: Channel #oss-draco](https://discord.gg/vPUNtwfm).
+
+## Versioning
+
+Draco uses [https://semver.org/].
+
+* Major (X.y.z) - Incremented for any backwards incompatible public API changes.
+* Minor (x.Y.z) - Incremented for new, backwards compatible, public API enhancements/fixes.
+* Patch (x.y.Z) - Incremented for small, backwards compatible, bug fixes.
+
 ## Usage
 
 ### Components
@@ -171,6 +184,8 @@ Here are some good resources to learn about Entity Component Systems
 ## Commercial License
 
 Draco is licensed under AGPL. You can purchase the right to use Draco under the [commercial license](https://github.com/guitsaru/draco/blob/master/COMM-LICENSE).
+
+Each purchase comes with free upgrades for the current major version of Draco.
 
 <a class="gumroad-button" href="https://guitsaru.itch.io/draco" target="_blank">Purchase Commercial License</a>
 
