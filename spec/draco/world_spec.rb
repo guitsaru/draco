@@ -28,6 +28,7 @@ end
 
 class SampleWorld < Draco::World
   entity WorldEntity
+  entity WorldEntity
   entity FilteredEntity, filtered_component: { tested: true }, as: :filtered_entity
   systems WorldSystem
 end
@@ -153,6 +154,7 @@ RSpec.describe Draco::World do
 
     it "has default entities" do
       expect(world.entities).to_not be_empty
+      expect(world.entities.count).to eq(3)
       expect(world.entities[FilteredComponent].first.filtered_component.tested).to be true
     end
 
