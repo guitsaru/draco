@@ -518,14 +518,21 @@ module Draco
       def [](*components_or_ids)
         components_or_ids
           .flatten
-          .map do |component_or_id|
-            if component_or_id.is_a?(Numeric)
-              Array(@entity_ids[component_or_id])
-            else
-              @component_to_entities[component_or_id]
-            end
-          end
+          .map { |component_or_id| select_entities(component_or_id) }
           .reduce { |acc, i| i & acc }
+      end
+
+      # Internal: Gets entities by component or id.
+      #
+      # component_or_id - The Component Class or entity id to select.
+      #
+      # Returns an Array of Entities.
+      def select_entities(component_or_id)
+        if component_or_id.is_a?(Numeric)
+          Array(@entity_ids[component_or_id])
+        else
+          @component_to_entities[component_or_id]
+        end
       end
 
       # Internal: Adds Entities to the EntityStore
