@@ -54,63 +54,12 @@ require "app/systems/update_attack_cooldown.rb"
 require "app/systems/update_countdown.rb"
 require "app/systems/update_planet_health.rb"
 
-class TitleScreen < Draco::World
-  entity Background
-  entity Title
-  entity GameStory
-  entity GameInstructions
-  entity StartGameInstructions
-
-  systems HandleGameStart, RenderLabels, RenderSprites
-end
-
-class SpaceGame < Draco::World
-  entity Background
-  entity Planet, as: :planet
-  entity Player, as: :player
-
-  systems UpdateAttackCooldown,
-          UpdateCountdown,
-          MoveLasers,
-          EnemyCombat,
-          EnemyMovement,
-          HandleInput,
-          KeepInScreen,
-          SpawnLasers,
-          HandleEnemyLaserCollision,
-          HandlePlayerLaserCollision,
-          HandleDestroyed,
-          Animate,
-          CleanupAnimations,
-          HandleGameOver,
-          HandleGameWin,
-          RenderSprites,
-          UpdatePlanetHealth,
-          RenderLabels
-
-
-  def initialize
-    super
-
-    30.times do |i|
-      base_x = 20
-      base_y = 560
-      width = 75
-
-      column = i % 10
-      row = i.idiv(10)
-
-      x = base_x + (column * width)
-      y = base_y - (row * width)
-
-      @entities << Enemy.new(position: { x: x, y: y })
-    end
-  end
-end
+# Worlds
+require "app/worlds/title_screen.rb"
+require "app/worlds/space_game.rb"
 
 def tick(args)
   args.state.world ||= TitleScreen.new
 
   args.state.world.tick(args)
-  # args.outputs.debug << args.gtk.framerate_diagnostics_primitives
 end
