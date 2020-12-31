@@ -264,6 +264,15 @@ module Draco
       attr_reader :attribute_options
     end
 
+    # Public: Creates a tag Component. If the tag already exists, return it.
+    #
+    # name - The string or symbol name of the component.
+    #
+    # Returns a class with subclass Draco::Component.
+    def self.Tag(name) # rubocop:disable Naming/MethodName
+      Draco::Tag(name)
+    end
+
     # Public: Initializes a new Component.
     #
     # values - The Hash of values to set for the Component instance (default: {}).
