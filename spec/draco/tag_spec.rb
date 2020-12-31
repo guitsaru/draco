@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Draco::Tag do
   describe "Tag" do
     subject { Draco::Tag(:destroyed) }

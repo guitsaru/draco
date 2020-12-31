@@ -308,7 +308,7 @@ module Draco
   # name - The symbol or string name of the component. It can be either camelcase or underscored.
   #
   # Returns a Class with superclass of Draco::Component.
-  def self.Tag(name)
+  def self.Tag(name) # rubocop:disable Naming/MethodName
     klass_name = camelize(name)
 
     return Object.const_get(klass_name) if Object.const_defined?(klass_name)
@@ -759,18 +759,16 @@ module Draco
   #   # => "CamelCase"
   #
   # Returns a string.
-  def self.camelize(string)
-    result = ""
+  def self.camelize(string) # rubocop:disable Metrics/MethodLength
     modifier = -32
 
-    string.to_s.bytes.map.with_index do |byte, i|
+    string.to_s.bytes.map do |byte|
       if byte == 95
         modifier = -32
         nil
       else
         char = (byte + modifier).chr
         modifier = 0
-
         char
       end
     end.compact.join
