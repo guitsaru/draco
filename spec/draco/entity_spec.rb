@@ -6,6 +6,7 @@ end
 
 class TestEntity < Draco::Entity
   component TestComponent
+  component Draco::Tag(:test_tag)
 end
 
 RSpec.describe Draco::Entity do
@@ -48,6 +49,12 @@ RSpec.describe Draco::Entity do
 
   describe "#<component_name>" do
     subject { TestEntity.new.test_component }
+
+    it { is_expected.to be }
+  end
+
+  describe "#<component_name> for Tag component" do
+    subject { TestEntity.new.test_tag }
 
     it { is_expected.to be }
   end

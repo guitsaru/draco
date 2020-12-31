@@ -300,6 +300,23 @@ module Draco
     end
   end
 
+  # Internal: Empty module to enable Tag() method.
+  module Tag; end
+
+  # Public: Creates a new empty component at runtime. If the given Class already exists, it reuses the existing Class.
+  #
+  # name - The symbol or string name of the component. It can be either camelcase or underscored.
+  #
+  # Returns a Class with superclass of Draco::Component.
+  def self.Tag(name)
+    klass_name = camelize(name)
+
+    return Object.const_get(klass_name) if Object.const_defined?(klass_name)
+
+    klass = Class.new(Component)
+    Object.const_set(klass_name, klass)
+  end
+
   # Public: Systems contain the logic of the game.
   # The System runs on each tick and manipulates the Entities in the World.
   class System
@@ -724,13 +741,38 @@ module Draco
   #
   # Returns a String.
   def self.underscore(string)
-    string.split("::").last.bytes.map.with_index do |byte, i|
+    string.to_s.split("::").last.bytes.map.with_index do |byte, i|
       if byte > 64 && byte < 97
-        downcased = byte + 32 # gemspec
+        downcased = byte + 32
         i.zero? ? downcased.chr : "_#{downcased.chr}"
       else
         byte.chr
       end
     end.join
+  end
+
+  # Internal: Converts an underscored string into a camel case string.
+  #
+  # Examples
+  #
+  #   camlize("camel_case")
+  #   # => "CamelCase"
+  #
+  # Returns a string.
+  def self.camelize(string)
+    result = ""
+    modifier = -32
+
+    string.to_s.bytes.map.with_index do |byte, i|
+      if byte == 95
+        modifier = -32
+        nil
+      else
+        char = (byte + modifier).chr
+        modifier = 0
+
+        char
+      end
+    end.compact.join
   end
 end
