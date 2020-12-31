@@ -47,7 +47,7 @@ These can be shared across many different types of game objects.
 class Visible < Draco::Component; end
 ```
 
-`Visible` is an example of a label component. An entity either has it, or it doesn't. We can also associate data with our
+`Visible` is an example of a tag component. An entity either has it, or it doesn't. We can also associate data with our
 components.
 
 ```ruby
@@ -66,6 +66,16 @@ component.x = 110
 
 component.x
 # => 110
+```
+
+#### Tag Components
+
+The `Visible` class above is an example of a tag component. These are common enough that we don't necessarily want to
+define a bunch of empty component classes. Draco provides a way to generate these classes at runtime.
+
+```ruby
+Draco::Tag(:visible)
+# => Visible
 ```
 
 ### Entities
