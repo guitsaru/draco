@@ -1,3 +1,9 @@
+## 0.5.1 (December 31, 2020)
+
+Features:
+
+  - Add an alias to `Draco::Tag` in Entities and Systems.
+
 ## 0.5.0 (December 31, 2020)
 
 Features:
