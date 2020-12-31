@@ -92,7 +92,7 @@ Often we have types of entities that are reused throughout the game. We can defi
 ```ruby
 class Goblin < Draco::Entity
   component Position, x: 50, y: 50
-  component Visible
+  component Tag(:visible)
 end
 
 goblin = Goblin.new
@@ -123,7 +123,7 @@ entities that include all of the given components.
 
 ```ruby
 class RenderSpriteSystem < Draco::System
-  filter Visible, Position, Sprite
+  filter Tag(:visible), Position, Sprite
 
   def tick(args)
     # You can also access the world that called the system.

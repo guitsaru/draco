@@ -6,7 +6,7 @@ end
 
 class TestEntity < Draco::Entity
   component TestComponent
-  component Draco::Tag(:test_tag)
+  component Tag(:test_tag)
 end
 
 RSpec.describe Draco::Entity do

@@ -4,6 +4,10 @@ class SampleSystem < Draco::System
   filter SampleComponent
 end
 
+class SampleTagSystem < Draco::System
+  filter Tag(:test_tag)
+end
+
 RSpec.describe Draco::System do
   describe "#entities" do
     subject { SampleSystem.new.entities }

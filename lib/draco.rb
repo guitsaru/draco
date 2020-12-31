@@ -5,7 +5,7 @@
 # An Entity Component System is an architectural pattern used in game development to decouple behavior from objects.
 module Draco
   # Public: The version of the library. Draco uses semver to version releases.
-  VERSION = "0.5.0"
+  VERSION = "0.5.1"
 
   # Public: A general purpose game object that consists of a unique id and a collection of Components.
   class Entity
@@ -37,6 +37,15 @@ module Draco
     # Returns nothing.
     def self.component(component, defaults = {})
       @default_components[component] = defaults
+    end
+
+    # Public: Creates a tag Component. If the tag already exists, return it.
+    #
+    # name - The string or symbol name of the component.
+    #
+    # Returns a class with subclass Draco::Component.
+    def self.Tag(name) # rubocop:disable Naming/MethodName
+      Draco::Tag(name)
     end
 
     class << self
@@ -300,9 +309,6 @@ module Draco
     end
   end
 
-  # Internal: Empty module to enable Tag() method.
-  module Tag; end
-
   # Public: Creates a new empty component at runtime. If the given Class already exists, it reuses the existing Class.
   #
   # name - The symbol or string name of the component. It can be either camelcase or underscored.
@@ -347,6 +353,15 @@ module Draco
     def self.inherited(sub)
       super
       sub.instance_variable_set(:@filter, [])
+    end
+
+    # Public: Creates a tag Component. If the tag already exists, return it.
+    #
+    # name - The string or symbol name of the component.
+    #
+    # Returns a class with subclass Draco::Component.
+    def self.Tag(name) # rubocop:disable Naming/MethodName
+      Draco::Tag(name)
     end
 
     # Public: Initializes a new System.
