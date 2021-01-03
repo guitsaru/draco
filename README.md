@@ -8,14 +8,17 @@ objects.
 
 ## Sample Application
 
-This repository includes a sample application in `samples/teeny-tiny`.
+This repository includes sample applications in the `samples/` directory.
+
+* teeny-tiny - A 20 second space shooter created during the DragonRuby TeenyTiny Game Jam
+* gorillas-basic - A recreation of the gorillas_basic sample game that comes with DragonRuby
 
 ### Running the sample application
 
 1. Download the [latest release](https://github.com/guitsaru/draco/archive/main.zip) of this repository.
 2. Create a copy of DragonRuby GTK in a new folder.
-3. Copy the teeny-tiny directory from draco into your new DragonRuby GTK folder. `cp -r draco/samples/teeny-tiny dragonruby/teeny-tiny`.
-4. Run it using `./dragonruby teeny-tiny`.
+3. Copy the teeny-tiny directory from draco into your new DragonRuby GTK folder. `cp -r draco/samples/ dragonruby/`.
+4. Run them using `./dragonruby teeny-tiny` or `./dragonruby gorillas-basic`.
 
 ## Installation
 
