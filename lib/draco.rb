@@ -111,39 +111,39 @@ module Draco
 
     # Public: Callback run before a component is added.
     #
-    # This is empty by default but is present to allow plugins to tie into.
-    #
     # component - The component that will be added.
     #
-    # Returns nothing.
-    def before_component_added(component); end
+    # Returns the component to add.
+    def before_component_added(component)
+      super
+    end
 
     # Public: Callback run after a component is added.
     #
-    # This is empty by default but is present to allow plugins to tie into.
+    # component - The component that was added.
     #
-    # component - The component that will be added.
-    #
-    # Returns nothing.
-    def after_component_added(component); end
+    # Returns the added component.
+    def after_component_added(component)
+      component
+    end
 
     # Public: Callback run before a component is deleted.
     #
-    # This is empty by default but is present to allow plugins to tie into.
-    #
     # component - The component that will be removed.
     #
-    # Returns nothing.
-    def before_component_removed(component); end
+    # Returns the component to remove.
+    def before_component_removed(component)
+      component
+    end
 
     # Public: Callback run after a component is deleted.
     #
-    # This is empty by default but is present to allow plugins to tie into.
+    # component - The component that was removed.
     #
-    # component - The component that has been removed.
-    #
-    # Returns nothing.
-    def after_component_removed(component); end
+    # Returns the removed component.
+    def after_component_removed(component)
+      component
+    end
 
     # Internal: Notifies subscribers that components have been updated.
     #
@@ -249,7 +249,7 @@ module Draco
       #
       # Returns the ComponentStore.
       def add(component)
-        @parent.before_component_added(component)
+        component = @parent.before_component_added(component)
         name = Draco.underscore(component.class.name.to_s).to_sym
         @components[name] = component
         @parent.after_component_added(component)
@@ -266,7 +266,7 @@ module Draco
       #
       # Returns the ComponentStore.
       def delete(component)
-        @parent.before_component_removed(component)
+        component = @parent.before_component_removed(component)
         name = Draco.underscore(component.class.name.to_s).to_sym
         @components.delete(name)
         @parent.after_component_removed(component)
