@@ -297,7 +297,7 @@ module Draco
     #
     # Returns a Hash representing the Component.
     def serialize
-      attrs = {class: self.class.name.to_s}
+      attrs = { class: self.class.name.to_s }
 
       instance_variables.each do |attr|
         name = attr.to_s.gsub("@", "").to_sym
