@@ -30,6 +30,10 @@ RSpec.describe Draco::Entity do
       expect(subject[:id]).to eq(entity.id)
     end
 
+    it "serialize the class" do
+      expect(subject[:class]).to eq("TestEntity")
+    end
+
     it "serializes the components" do
       expect(subject[:test_component]).to be
     end

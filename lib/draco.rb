@@ -102,7 +102,7 @@ module Draco
     #
     # Returns a Hash representing the Entity.
     def serialize
-      serialized = { id: id }
+      serialized = { class: self.class.name.to_s, id: id }
 
       components.each do |component|
         serialized[Draco.underscore(component.class.name.to_s).to_sym] = component.serialize
@@ -297,7 +297,7 @@ module Draco
     #
     # Returns a Hash representing the Component.
     def serialize
-      attrs = {}
+      attrs = { class: self.class.name.to_s }
 
       instance_variables.each do |attr|
         name = attr.to_s.gsub("@", "").to_sym
@@ -396,6 +396,7 @@ module Draco
     # Returns a Hash representing the System.
     def serialize
       {
+        class: self.class.name.to_s,
         entities: entities.map(&:serialize),
         world: world ? world.serialize : nil
       }
@@ -521,6 +522,7 @@ module Draco
     # Returns a Hash representing the World.
     def serialize
       {
+        class: self.class.name.to_s,
         entities: @entities.map(&:serialize),
         systems: @systems.map { |system| system.name.to_s }
       }
