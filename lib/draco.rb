@@ -80,7 +80,15 @@ module Draco
         arguments = default_args.merge(args[Draco.underscore(component.name.to_s).to_sym] || {})
         @components << component.new(arguments)
       end
+      after_initialize
     end
+
+    # Public: Callback run after the entity is initialized.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # Returns nothing.
+    def after_initialize; end
 
     # Public: Subscribe to an Entity's Component updates.
     #
@@ -90,6 +98,42 @@ module Draco
     def subscribe(subscriber)
       @subscriptions << subscriber
     end
+
+    # Public: Callback run before a component is added.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # component - The component that will be added.
+    #
+    # Returns nothing.
+    def before_component_added(component); end
+
+    # Public: Callback run after a component is added.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # component - The component that will be added.
+    #
+    # Returns nothing.
+    def after_component_added(component); end
+
+    # Public: Callback run before a component is deleted.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # component - The component that will be removed.
+    #
+    # Returns nothing.
+    def before_component_removed(component); end
+
+    # Public: Callback run after a component is deleted.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # component - The component that has been removed.
+    #
+    # Returns nothing.
+    def after_component_removed(component); end
 
     # Internal: Notifies subscribers that components have been updated.
     #
@@ -195,8 +239,10 @@ module Draco
       #
       # Returns the ComponentStore.
       def add(component)
+        @parent.before_component_added(component)
         name = Draco.underscore(component.class.name.to_s).to_sym
         @components[name] = component
+        @parent.after_component_added(component)
 
         @parent.components_updated
         self
@@ -210,8 +256,10 @@ module Draco
       #
       # Returns the ComponentStore.
       def delete(component)
+        @parent.before_component_removed(component)
         name = Draco.underscore(component.class.name.to_s).to_sym
         @components.delete(name)
+        @parent.after_component_removed(component)
 
         @parent.components_updated
         self
@@ -291,7 +339,15 @@ module Draco
         value = values.fetch(name.to_sym, options[:default])
         instance_variable_set("@#{name}", value)
       end
+      after_initialize
     end
+
+    # Public: Callback run after the component is initialized.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # Returns nothing.
+    def after_initialize; end
 
     # Public: Serializes the Component to save the current state.
     #
@@ -380,7 +436,35 @@ module Draco
     def initialize(entities: [], world: nil)
       @entities = entities
       @world = world
+      after_initialize
     end
+
+    # Public: Callback run after the system is initialized.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # Returns nothing.
+    def after_initialize; end
+
+    # Public: Runs the system tick function.
+    #
+    # context - The context object of the current tick from the game engine. In DragonRuby this is `args`.
+    #
+    # Returns nothing.
+    def call(context)
+      before_tick(context)
+      tick(context)
+      after_tick(context)
+    end
+
+    # Public: Callback run before #tick is called.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # context - The context object of the current tick from the game engine. In DragonRuby this is `args`.
+    #
+    # Returns nothing.
+    def before_tick(context); end
 
     # Public: Runs the System logic for the current game engine tick.
     #
@@ -390,6 +474,13 @@ module Draco
     #
     # Returns nothing
     def tick(context); end
+
+    # Public: Callback run after #tick is called.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # Returns nothing.
+    def after_tick(context); end
 
     # Public: Serializes the System to save the current state.
     #
@@ -493,7 +584,24 @@ module Draco
 
       @entities = EntityStore.new(default_entities + entities)
       @systems = self.class.default_systems + systems
+      after_initialize
     end
+
+    # Public: Callback run after the world is initialized.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # Returns nothing.
+    def after_initialize; end
+
+    # Public: Callback run before #tick is called.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # context - The context object of the current tick from the game engine. In DragonRuby this is `args`.
+    #
+    # Returns nothing.
+    def before_tick(context); end
 
     # Public: Runs all of the Systems every tick.
     #
@@ -501,12 +609,26 @@ module Draco
     #
     # Returns nothing
     def tick(context)
-      systems.each do |system|
+      before_tick(context)
+      results = systems.map do |system|
         entities = filter(system.filter)
 
-        system.new(entities: entities, world: self).tick(context)
+        sys = system.new(entities: entities, world: self)
+        sys.call(context)
+        sys
       end
+      after_tick(context, results)
     end
+
+    # Public: Callback run after #tick is called.
+    #
+    # This is empty by default but is present to allow plugins to tie into.
+    #
+    # context - The context object of the current tick from the game engine. In DragonRuby this is `args`.
+    # results - The System instances that were run.
+    #
+    # Returns nothing.
+    def after_tick(context, results); end
 
     # Public: Finds all Entities that contain all of the given Components.
     #
