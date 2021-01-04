@@ -1,3 +1,9 @@
+## 0.5.2
+
+Features:
+
+  - `#serialize` now includes the class name for Entities, Components, and Systems.
+
 ## 0.5.1 (December 31, 2020)
 
 Features:
