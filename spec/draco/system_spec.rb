@@ -41,6 +41,10 @@ RSpec.describe Draco::System do
     it { is_expected.to include(:entities) }
     it { is_expected.to include(:world) }
 
+    it "serializes the class" do
+      expect(subject[:class]).to eq("SampleSystem")
+    end
+
     context "with a world" do
       subject { SampleSystem.new(world: Draco::World.new).serialize }
 

@@ -29,6 +29,19 @@ RSpec.describe Draco::Component do
     end
   end
 
+  describe "#serialize" do
+    subject { SampleComponent.new.serialize }
+
+    it "serializes the class" do
+      expect(subject[:class]).to eq("SampleComponent")
+    end
+
+    it "serializes the attributes" do
+      expect(subject[:name]).to be_nil
+      expect(subject[:velocity]).to eq(0)
+    end
+  end
+
   describe "#inspect" do
     subject { SampleComponent.new.inspect }
 
