@@ -1,10 +1,13 @@
+# frozen_string_literal: true
+
 module Draco
-  # Public: Calculates the average time of 
+  # Public: Calculates the average time of
   module Benchmark
     def self.included(mod)
       mod.prepend(World)
     end
 
+    # Internal: Plugin implementation for World.
     module World
       def before_tick(context)
         super
@@ -21,10 +24,11 @@ module Draco
       end
 
       def system_timers
-        @system_timer_data.sort_by { |k,v| -v }.to_h
+        @system_timer_data.sort_by { |_k, v| -v }.to_h
       end
     end
 
+    # Internal: Plugin implementation for System.
     module System
       def after_initialize
         super

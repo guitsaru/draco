@@ -73,14 +73,24 @@ module Draco
     def initialize(args = {})
       @id = args.fetch(:id, @@next_id)
       @@next_id = [@id + 1, @@next_id].max
-      @components = ComponentStore.new(self)
       @subscriptions = []
+
+      setup_components(args)
+      after_initialize
+    end
+
+    # Internal: Sets up the default components for the class.
+    #
+    # args - A hash of arguments to pass into the generated components.
+    #
+    # Returns nothing.
+    def setup_components(args)
+      @components = ComponentStore.new(self)
 
       self.class.default_components.each do |component, default_args|
         arguments = default_args.merge(args[Draco.underscore(component.name.to_s).to_sym] || {})
         @components << component.new(arguments)
       end
-      after_initialize
     end
 
     # Public: Callback run after the entity is initialized.
