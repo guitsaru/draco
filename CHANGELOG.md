@@ -1,8 +1,21 @@
-## 0.5.2
+## 0.6.0
 
 Features:
 
   - `#serialize` now includes the class name for Entities, Components, and Systems.
+  - Added callbacks to Entities, Components, Systems and Worlds to better enable plugins.
+  - Added a sample plugin to `lib/draco/benchmark.rb` to benchmark your systems.
+
+    How to use:
+
+    ```ruby
+    class World < Draco::World
+      include Draco::Benchmark
+    end
+
+    world.system_timers
+    # => { :system => 0.001 }
+    ```
 
 ## 0.5.1 (December 31, 2020)
 
