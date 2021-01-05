@@ -4,6 +4,8 @@
 #
 # An Entity Component System is an architectural pattern used in game development to decouple behavior from objects.
 module Draco
+  class NotAComponentError < StandardError; end
+
   # Public: The version of the library. Draco uses semver to version releases.
   VERSION = "0.5.1"
 
@@ -111,45 +113,40 @@ module Draco
 
     # Public: Callback run before a component is added.
     #
-    # This is empty by default but is present to allow plugins to tie into.
-    #
     # component - The component that will be added.
     #
-    # Returns nothing.
-    def before_component_added(component); end
+    # Returns the component to add.
+    def before_component_added(component)
+      component
+    end
 
     # Public: Callback run after a component is added.
     #
-    # This is empty by default but is present to allow plugins to tie into.
+    # component - The component that was added.
     #
-    # component - The component that will be added.
-    #
-    # Returns nothing.
-    def after_component_added(component); end
+    # Returns the added component.
+    def after_component_added(component)
+      @subscriptions.each { |sub| sub.component_added(self, component) }
+      component
+    end
 
     # Public: Callback run before a component is deleted.
     #
-    # This is empty by default but is present to allow plugins to tie into.
-    #
     # component - The component that will be removed.
     #
-    # Returns nothing.
-    def before_component_removed(component); end
+    # Returns the component to remove.
+    def before_component_removed(component)
+      component
+    end
 
     # Public: Callback run after a component is deleted.
     #
-    # This is empty by default but is present to allow plugins to tie into.
+    # component - The component that was removed.
     #
-    # component - The component that has been removed.
-    #
-    # Returns nothing.
-    def after_component_removed(component); end
-
-    # Internal: Notifies subscribers that components have been updated.
-    #
-    # Returns nothing.
-    def components_updated
-      @subscriptions.each { |sub| sub.entity_updated(self) }
+    # Returns the removed component.
+    def after_component_removed(component)
+      @subscriptions.each { |sub| sub.component_removed(self, component) }
+      component
     end
 
     # Public: Serializes the Entity to save the current state.
@@ -228,7 +225,6 @@ module Draco
       def <<(*components)
         components.flatten.each { |component| add(component) }
 
-        @parent.components_updated
         self
       end
 
@@ -249,12 +245,16 @@ module Draco
       #
       # Returns the ComponentStore.
       def add(component)
-        @parent.before_component_added(component)
+        unless component.is_a?(Draco::Component)
+          message = component.is_a?(Class) ? " You might need to initialize the component before you add it." : ""
+          raise Draco::NotAComponentError, "The given value is not a component.#{message}"
+        end
+
+        component = @parent.before_component_added(component)
         name = Draco.underscore(component.class.name.to_s).to_sym
         @components[name] = component
         @parent.after_component_added(component)
 
-        @parent.components_updated
         self
       end
 
@@ -266,12 +266,11 @@ module Draco
       #
       # Returns the ComponentStore.
       def delete(component)
-        @parent.before_component_removed(component)
+        component = @parent.before_component_removed(component)
         name = Draco.underscore(component.class.name.to_s).to_sym
         @components.delete(name)
         @parent.after_component_removed(component)
 
-        @parent.components_updated
         self
       end
 
@@ -465,6 +464,7 @@ module Draco
       before_tick(context)
       tick(context)
       after_tick(context)
+      self
     end
 
     # Public: Callback run before #tick is called.
@@ -592,7 +592,7 @@ module Draco
         entity
       end
 
-      @entities = EntityStore.new(default_entities + entities)
+      @entities = EntityStore.new(self, default_entities + entities)
       @systems = self.class.default_systems + systems
       after_initialize
     end
@@ -606,12 +606,16 @@ module Draco
 
     # Public: Callback run before #tick is called.
     #
-    # This is empty by default but is present to allow plugins to tie into.
-    #
     # context - The context object of the current tick from the game engine. In DragonRuby this is `args`.
     #
-    # Returns nothing.
-    def before_tick(context); end
+    # Returns the systems to run during this tick.
+    def before_tick(_context)
+      systems.map do |system|
+        entities = filter(system.filter)
+
+        system.new(entities: entities, world: self)
+      end
+    end
 
     # Public: Runs all of the Systems every tick.
     #
@@ -619,14 +623,10 @@ module Draco
     #
     # Returns nothing
     def tick(context)
-      before_tick(context)
-      results = systems.map do |system|
-        entities = filter(system.filter)
-
-        sys = system.new(entities: entities, world: self)
-        sys.call(context)
-        sys
+      results = before_tick(context).map do |system|
+        system.call(context)
       end
+
       after_tick(context, results)
     end
 
@@ -639,6 +639,22 @@ module Draco
     #
     # Returns nothing.
     def after_tick(context, results); end
+
+    # Public: Callback to run when a component is added to an existing Entity.
+    #
+    # entity - The Entity the Component was added to.
+    # component - The Component that was added to the Entity.
+    #
+    # Returns nothing.
+    def component_added(entity, component); end
+
+    # Public: Callback to run when a component is added to an existing Entity.
+    #
+    # entity - The Entity the Component was removed from.
+    # component - The Component that was removed from the Entity.
+    #
+    # Returns nothing.
+    def component_removed(entity, component); end
 
     # Public: Finds all Entities that contain all of the given Components.
     #
@@ -674,10 +690,13 @@ module Draco
     class EntityStore
       include Enumerable
 
+      attr_reader :parent
+
       # Internal: Initializes a new EntityStore
       #
       # entities - The Entities to add to the EntityStore
-      def initialize(*entities)
+      def initialize(parent, *entities)
+        @parent = parent
         @entity_to_components = Hash.new { |hash, key| hash[key] = Set.new }
         @component_to_entities = Hash.new { |hash, key| hash[key] = Set.new }
         @entity_ids = {}
@@ -729,13 +748,11 @@ module Draco
         entity.subscribe(self)
 
         @entity_ids[entity.id] = entity
-
         components = entity.components.map(&:class)
         @entity_to_components[entity].merge(components)
 
-        components.each do |component|
-          @component_to_entities[component].add(entity)
-        end
+        components.each { |component| @component_to_entities[component].add(entity) }
+        entity.components.each { |component| @parent.component_added(entity, component) }
 
         self
       end
@@ -764,21 +781,26 @@ module Draco
         @entity_to_components.keys.each(&block)
       end
 
-      # Internal: Updates the EntityStore when an Entity's Components are modified.
+      # Internal: Updates the EntityStore when an Entity's Components are added.
       #
-      # entity - The Entity whose Components were updated.
+      # entity - The Entity the Component was added to.
+      # component - The Component that was added to the Entity.
       #
       # Returns nothing.
-      def entity_updated(entity)
-        old = @entity_to_components[entity].to_a
-        components = entity.components.map(&:class)
-        @entity_to_components[entity] = components
+      def component_added(entity, component)
+        @component_to_entities[component.class].add(entity)
+        @parent.component_added(entity, component)
+      end
 
-        added = components - old
-        deleted = old - components
-
-        added.each { |component| @component_to_entities[component].add(entity) }
-        deleted.each { |component| @component_to_entities[component].delete(entity) }
+      # Internal: Updates the EntityStore when an Entity's Components are removed.
+      #
+      # entity - The Entity the Component was removed from.
+      # component - The Component that was removed from the Entity.
+      #
+      # Returns nothing.
+      def component_removed(entity, component)
+        @component_to_entities[component.class].delete(entity)
+        @parent.component_removed(entity, component)
       end
     end
   end
