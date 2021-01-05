@@ -247,7 +247,7 @@ module Draco
       def add(component)
         unless component.is_a?(Draco::Component)
           message = component.is_a?(Class) ? " You might need to initialize the component before you add it." : ""
-          raise Draco::NotAComponentError.new("The given value is not a component.#{message}")
+          raise Draco::NotAComponentError, "The given value is not a component.#{message}"
         end
 
         component = @parent.before_component_added(component)
@@ -609,7 +609,7 @@ module Draco
     # context - The context object of the current tick from the game engine. In DragonRuby this is `args`.
     #
     # Returns the systems to run during this tick.
-    def before_tick(context)
+    def before_tick(_context)
       systems.map do |system|
         entities = filter(system.filter)
 
@@ -748,17 +748,11 @@ module Draco
         entity.subscribe(self)
 
         @entity_ids[entity.id] = entity
-
         components = entity.components.map(&:class)
         @entity_to_components[entity].merge(components)
 
-        components.each do |component|
-          @component_to_entities[component].add(entity)
-        end
-
-        entity.components.each do |component|
-          @parent.component_added(entity, component)
-        end
+        components.each { |component| @component_to_entities[component].add(entity) }
+        entity.components.each { |component| @parent.component_added(entity, component) }
 
         self
       end
