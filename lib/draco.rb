@@ -457,6 +457,7 @@ module Draco
       before_tick(context)
       tick(context)
       after_tick(context)
+      self
     end
 
     # Public: Callback run before #tick is called.
@@ -598,12 +599,16 @@ module Draco
 
     # Public: Callback run before #tick is called.
     #
-    # This is empty by default but is present to allow plugins to tie into.
-    #
     # context - The context object of the current tick from the game engine. In DragonRuby this is `args`.
     #
-    # Returns nothing.
-    def before_tick(context); end
+    # Returns the systems to run during this tick.
+    def before_tick(context)
+      systems.map do |system|
+        entities = filter(system.filter)
+
+        system.new(entities: entities, world: self)
+      end
+    end
 
     # Public: Runs all of the Systems every tick.
     #
@@ -611,14 +616,10 @@ module Draco
     #
     # Returns nothing
     def tick(context)
-      before_tick(context)
-      results = systems.map do |system|
-        entities = filter(system.filter)
-
-        sys = system.new(entities: entities, world: self)
-        sys.call(context)
-        sys
+      results = before_tick(context).map do |system|
+        system.call(context)
       end
+
       after_tick(context, results)
     end
 
