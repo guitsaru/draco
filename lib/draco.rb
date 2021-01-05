@@ -7,7 +7,7 @@ module Draco
   class NotAComponentError < StandardError; end
 
   # Public: The version of the library. Draco uses semver to version releases.
-  VERSION = "0.5.1"
+  VERSION = "0.6.0"
 
   # Public: A general purpose game object that consists of a unique id and a collection of Components.
   class Entity
