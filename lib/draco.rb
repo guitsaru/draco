@@ -245,7 +245,7 @@ module Draco
       #
       # Returns the ComponentStore.
       def add(component)
-        unless component.ancestors.include?(Draco::Component)
+        unless component.is_a?(Draco::Component)
           message = component.is_a?(Class) ? " You might need to initialize the component before you add it." : ""
           raise Draco::NotAComponentError.new("The given value is not a component.#{message}")
         end
