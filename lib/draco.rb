@@ -4,6 +4,8 @@
 #
 # An Entity Component System is an architectural pattern used in game development to decouple behavior from objects.
 module Draco
+  class NotAComponentError < StandardError; end
+
   # Public: The version of the library. Draco uses semver to version releases.
   VERSION = "0.5.1"
 
@@ -243,6 +245,11 @@ module Draco
       #
       # Returns the ComponentStore.
       def add(component)
+        unless component.ancestors.include?(Draco::Component)
+          message = component.is_a?(Class) ? " You might need to initialize the component before you add it." : ""
+          raise Draco::NotAComponentError.new("The given value is not a component.#{message}")
+        end
+
         component = @parent.before_component_added(component)
         name = Draco.underscore(component.class.name.to_s).to_sym
         @components[name] = component
