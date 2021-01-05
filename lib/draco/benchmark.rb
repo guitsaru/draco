@@ -1,18 +1,16 @@
 # frozen_string_literal: true
 
 module Draco
-  # Public: Calculates the average time of
+  # Public: Calculates the average time of 
   module Benchmark
     def self.included(mod)
       mod.prepend(World)
     end
 
-    # Internal: Plugin implementation for World.
     module World
       def before_tick(context)
-        super
         @system_timer_data = Hash.new { |h, k| h[k] = [] }
-        @systems.each { |system| system.prepend(System) }
+        super.each { |system| system.class.prepend(System) }
       end
 
       def after_tick(context, results)
@@ -21,14 +19,14 @@ module Draco
           name = Draco.underscore(system.class.name.to_s).to_sym
           @system_timer_data[name] = (system.timer * 1000.0).round(5)
         end
+        puts @system_timer_data.inspect if context.tick_count % 10 == 0
       end
 
       def system_timers
-        @system_timer_data.sort_by { |_k, v| -v }.to_h
+        @system_timer_data.sort_by { |k,v| -v }.to_h
       end
     end
 
-    # Internal: Plugin implementation for System.
     module System
       def after_initialize
         super
