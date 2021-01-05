@@ -115,7 +115,7 @@ module Draco
     #
     # Returns the component to add.
     def before_component_added(component)
-      super
+      component
     end
 
     # Public: Callback run after a component is added.
@@ -124,6 +124,7 @@ module Draco
     #
     # Returns the added component.
     def after_component_added(component)
+      @subscriptions.each { |sub| sub.component_added(self, component) }
       component
     end
 
@@ -142,14 +143,8 @@ module Draco
     #
     # Returns the removed component.
     def after_component_removed(component)
+      @subscriptions.each { |sub| sub.component_removed(self, component) }
       component
-    end
-
-    # Internal: Notifies subscribers that components have been updated.
-    #
-    # Returns nothing.
-    def components_updated
-      @subscriptions.each { |sub| sub.entity_updated(self) }
     end
 
     # Public: Serializes the Entity to save the current state.
@@ -228,7 +223,6 @@ module Draco
       def <<(*components)
         components.flatten.each { |component| add(component) }
 
-        @parent.components_updated
         self
       end
 
@@ -254,7 +248,6 @@ module Draco
         @components[name] = component
         @parent.after_component_added(component)
 
-        @parent.components_updated
         self
       end
 
@@ -271,7 +264,6 @@ module Draco
         @components.delete(name)
         @parent.after_component_removed(component)
 
-        @parent.components_updated
         self
       end
 
@@ -592,7 +584,7 @@ module Draco
         entity
       end
 
-      @entities = EntityStore.new(default_entities + entities)
+      @entities = EntityStore.new(self, default_entities + entities)
       @systems = self.class.default_systems + systems
       after_initialize
     end
@@ -640,6 +632,22 @@ module Draco
     # Returns nothing.
     def after_tick(context, results); end
 
+    # Public: Callback to run when a component is added to an existing Entity.
+    #
+    # entity - The Entity the Component was added to.
+    # component - The Component that was added to the Entity.
+    #
+    # Returns nothing.
+    def component_added(entity, component); end
+
+    # Public: Callback to run when a component is added to an existing Entity.
+    #
+    # entity - The Entity the Component was removed from.
+    # component - The Component that was removed from the Entity.
+    #
+    # Returns nothing.
+    def component_removed(entity, component); end
+
     # Public: Finds all Entities that contain all of the given Components.
     #
     # components - An Array of Component classes to match.
@@ -674,10 +682,13 @@ module Draco
     class EntityStore
       include Enumerable
 
+      attr_reader :parent
+
       # Internal: Initializes a new EntityStore
       #
       # entities - The Entities to add to the EntityStore
-      def initialize(*entities)
+      def initialize(parent, *entities)
+        @parent = parent
         @entity_to_components = Hash.new { |hash, key| hash[key] = Set.new }
         @component_to_entities = Hash.new { |hash, key| hash[key] = Set.new }
         @entity_ids = {}
@@ -737,6 +748,10 @@ module Draco
           @component_to_entities[component].add(entity)
         end
 
+        entity.components.each do |component|
+          @parent.component_added(entity, component)
+        end
+
         self
       end
 
@@ -764,21 +779,26 @@ module Draco
         @entity_to_components.keys.each(&block)
       end
 
-      # Internal: Updates the EntityStore when an Entity's Components are modified.
+      # Internal: Updates the EntityStore when an Entity's Components are added.
       #
-      # entity - The Entity whose Components were updated.
+      # entity - The Entity the Component was added to.
+      # component - The Component that was added to the Entity.
       #
       # Returns nothing.
-      def entity_updated(entity)
-        old = @entity_to_components[entity].to_a
-        components = entity.components.map(&:class)
-        @entity_to_components[entity] = components
+      def component_added(entity, component)
+        @component_to_entities[component.class].add(entity)
+        @parent.component_added(entity, component)
+      end
 
-        added = components - old
-        deleted = old - components
-
-        added.each { |component| @component_to_entities[component].add(entity) }
-        deleted.each { |component| @component_to_entities[component].delete(entity) }
+      # Internal: Updates the EntityStore when an Entity's Components are removed.
+      #
+      # entity - The Entity the Component was removed from.
+      # component - The Component that was removed from the Entity.
+      #
+      # Returns nothing.
+      def component_removed(entity, component)
+        @component_to_entities[component.class].delete(entity)
+        @parent.component_removed(entity, component)
       end
     end
   end
