@@ -847,6 +847,11 @@ module Draco
       self
     end
 
+    # Internal: alias of merge
+    def +(other)
+      merge(other)
+    end
+
     # Internal: Returns an Enumerator for all of the entries in the Set.
     def each(&block)
       @hash.keys.each(&block)
