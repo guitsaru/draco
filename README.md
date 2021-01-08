@@ -6,6 +6,21 @@ An Entity Component System is an architectural framework that decouples game obj
 build game objects through composition. This allows you to easily share small logic components between different game
 objects.
 
+## Table of Contents
+
+1. [Sample Application](https://github.com/guitsaru/draco#sample-application)
+2. [Installation](https://github.com/guitsaru/draco#installation)
+3. [Support](https://github.com/guitsaru/draco#support)
+4. [Versioning](https://github.com/guitsaru/draco#versioning)
+5. [Usage](https://github.com/guitsaru/draco#usage)
+    1. [Components](https://github.com/guitsaru/draco#components)
+    2. [Entities](https://github.com/guitsaru/draco#entities)
+    3. [Systems](https://github.com/guitsaru/draco#systems)
+    4. [Worlds](https://github.com/guitsaru/draco#worlds)
+6. [Plugins](https://github.com/guitsaru/draco#plugins)
+7. [Resources](https://github.com/guitsaru/draco#resources)
+8. [Commercial License](https://github.com/guitsaru/draco#commercial-license)
+
 ## Sample Application
 
 This repository includes sample applications in the `samples/` directory.
@@ -178,7 +193,7 @@ end
 world = Overworld.new
 ```
 
-### Named Entities
+#### Named Entities
 
 If there are entities that are frequently accessed in our systems, we can give these a name. In the above example, our
 player entity has been given the name `player`. We can now access this directly from our world:
@@ -187,7 +202,7 @@ player entity has been given the name `player`. We can now access this directly 
 world.player
 ```
 
-### Fetching entities by id
+#### Fetching entities by id
 
 In some cases you'll want to keep track of entities by their id, such as when you want to keep track of another entity in a component.
 
@@ -199,6 +214,13 @@ entity.id
 world.entities[12] == entity
 # => true
 ```
+
+## Plugins
+
+* [Draco::Events](https://github.com/guitsaru/draco-events) - On demand system dispatch and component observers.
+* [Draco::Scenes](https://github.com/guitsaru/draco-scenes) - Quickly switch out entities and systems in a world.
+* [Draco::State](https://github.com/guitsaru/draco-state) - Define a set of components on an entity that are mutually exclusive.
+* [Draco::Periodic](https://github.com/guitsaru/draco-periodic) - Make a system run every n ticks instead of every tick.
 
 ## Learn More
 
