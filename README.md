@@ -18,7 +18,7 @@ objects.
     3. [Systems](https://github.com/guitsaru/draco#systems)
     4. [Worlds](https://github.com/guitsaru/draco#worlds)
 6. [Plugins](https://github.com/guitsaru/draco#plugins)
-7. [Resources](https://github.com/guitsaru/draco#resources)
+7. [Resources](https://github.com/guitsaru/draco#learn-more)
 8. [Commercial License](https://github.com/guitsaru/draco#commercial-license)
 
 ## Sample Application
