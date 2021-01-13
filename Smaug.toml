@@ -3,6 +3,5 @@ name = "Draco"
 version = "0.6.0"
 url = "https://github.com/guitsaru/draco"
 
-[files]
-"lib/draco.rb" = "app/lib/draco.rb"
-"lib/draco/benchmark.rb" = "app/lib/draco/benchmark.rb"
+[package]
+requires = [ "lib/draco.rb" ]
