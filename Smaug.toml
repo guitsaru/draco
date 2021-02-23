@@ -1,0 +1,25 @@
+[package]
+name = "draco"
+version = "0.6.1"
+homepage = "https://github.com/guitsaru/draco"
+documentation = "https://github.com/guitsaru/draco"
+authors = ["Matt Pruitt <matt@guitsaru.com>"]
+keywords = ["ECS"]
+
+requires = [
+	"lib/draco.rb",
+	"app/components/index.rb",
+	"app/entities/index.rb",
+	"app/systems/index.rb",
+	"app/worlds/index.rb"
+]
+
+[dragonruby]
+version = "2.3"
+edition = "standard"
+
+[package.installs]
+"template/components/index.rb" = "app/components/index.rb"
+"template/entities/index.rb" = "app/entities/index.rb"
+"template/systems/index.rb" = "app/systems/index.rb"
+"template/worlds/index.rb" = "app/worlds/index.rb"
