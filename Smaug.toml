@@ -3,7 +3,7 @@ name = "draco"
 version = "0.6.1"
 homepage = "https://github.com/guitsaru/draco"
 documentation = "https://github.com/guitsaru/draco"
-authors = ["Matt Pruitt"]
+authors = ["Matt Pruitt <matt@guitsaru.com>"]
 keywords = ["ECS"]
 
 requires = [
