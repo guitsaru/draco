@@ -1,9 +1,11 @@
-[project]
-name = "Draco"
-version = "0.6.0"
-url = "https://github.com/guitsaru/draco"
-
 [package]
+name = "Draco"
+version = "0.6.1"
+homepage = "https://github.com/guitsaru/draco"
+documentation = "https://github.com/guitsaru/draco"
+authors = ["Matt Pruitt"]
+keywords = ["ECS"]
+
 requires = [
 	"lib/draco.rb",
 	"app/components/index.rb",
@@ -11,6 +13,10 @@ requires = [
 	"app/systems/index.rb",
 	"app/worlds/index.rb"
 ]
+
+[dragonruby]
+version = "2.3"
+edition = "standard"
 
 [package.installs]
 "template/components/index.rb" = "app/components/index.rb"
