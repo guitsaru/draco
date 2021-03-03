@@ -231,7 +231,7 @@ Here are some good resources to learn about Entity Component Systems
 
 ## Commercial License
 
-Draco is licensed under AGPL. You can purchase the right to use Draco under the [commercial license](https://github.com/guitsaru/draco/blob/master/COMM-LICENSE).
+Draco is licensed under AGPL. You can purchase the right to use Draco under the [commercial license](https://github.com/guitsaru/draco/blob/master/docs/COMM-LICENSE).
 
 Each purchase comes with free upgrades for the current major version of Draco.
 
